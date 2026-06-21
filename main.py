@@ -1,7 +1,9 @@
 import os
+import json
 import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -12,7 +14,7 @@ MODEL = os.getenv("MODEL", "deepseek-chat")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://deepseekchat060621.vercel.app"],  # 上线后建议改成你的前端域名
+    allow_origins=["https://deepseekchat060621.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,7 +25,7 @@ class ChatRequest(BaseModel):
 
 @app.get("/")
 def health_check():
-    return {"status": "ok", "service": "DeepSeek FastAPI Backend"}
+    return {"status": "ok"}
 
 @app.post("/chat")
 def chat(req: ChatRequest):
@@ -31,26 +33,47 @@ def chat(req: ChatRequest):
 
     headers = {
         "Authorization": f"Bearer {API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     payload = {
         "model": MODEL,
         "messages": req.messages,
         "max_tokens": 4096,
-        "temperature": 0.7
+        "temperature": 0.7,
+        "stream": True,
     }
 
-    resp = requests.post(url, headers=headers, json=payload, timeout=60)
+    def generate():
+        with requests.post(
+            url,
+            headers=headers,
+            json=payload,
+            stream=True,
+            timeout=60
+        ) as resp:
+            if resp.status_code != 200:
+                yield f"ERROR: {resp.text}"
+                return
 
-    if resp.status_code != 200:
-        return {
-            "error": True,
-            "status_code": resp.status_code,
-            "detail": resp.text
-        }
+            for line in resp.iter_lines():
+                if not line:
+                    continue
 
-    result = resp.json()
-    return {
-        "reply": result["choices"][0]["message"]["content"]
-    }
+                line = line.decode("utf-8")
+
+                if line.startswith("data: "):
+                    data = line[6:]
+
+                    if data == "[DONE]":
+                        break
+
+                    try:
+                        chunk = json.loads(data)
+                        content = chunk["choices"][0]["delta"].get("content", "")
+                        if content:
+                            yield content
+                    except Exception:
+                        continue
+
+    return StreamingResponse(generate(), media_type="text/plain")

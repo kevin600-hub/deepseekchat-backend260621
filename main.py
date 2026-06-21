@@ -12,7 +12,7 @@ MODEL = os.getenv("MODEL", "deepseek-chat")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://deepseekchat060621.vercel.app/"],  # 上线后建议改成你的前端域名
+    allow_origins=["https://deepseekchat060621.vercel.app"],  # 上线后建议改成你的前端域名
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -5,23 +5,14 @@ import os
 
 app = Flask(__name__)
 
-# ========== 从 config.json 读取 ==========
-def load_config():
-    try:
-        with open('config.json', 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except Exception as e:
-        print(f"❌ 读取配置失败: {e}")
-        return None
+# ========== 从环境变量读取配置 ==========
+API_KEY = os.environ.get('DEEPSEEK_API_KEY', '').strip()
+BASE_URL = os.environ.get('BASE_URL', 'https://api.deepseek.com/v1').strip()
+MODEL = os.environ.get('MODEL', 'deepseek-chat').strip()
 
-config = load_config()
-if not config:
-    print("❌ 请检查 config.json 文件")
+if not API_KEY:
+    print("❌ 错误: 请设置 DEEPSEEK_API_KEY 环境变量")
     exit(1)
-
-API_KEY = config.get('API_KEY', '').strip()
-BASE_URL = config.get('BASE_URL', '').rstrip('/')
-MODEL = config.get('MODEL', 'deepseek-chat')
 
 print("="*50)
 print("✅ DeepSeek 配置加载成功")
@@ -205,7 +196,6 @@ def chat():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 5000))
     print("🚀 DeepSeek 编程助手启动中...")
     print(f"🌐 端口: {port}")

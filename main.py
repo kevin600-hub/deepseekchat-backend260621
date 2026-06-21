@@ -16,6 +16,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://deepseekchat060621.vercel.app",
+        "https://meshbagseller.com",
         "https://www.meshbagseller.com"
     ],
     allow_credentials=True,

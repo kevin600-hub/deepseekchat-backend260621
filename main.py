@@ -14,7 +14,11 @@ MODEL = os.getenv("MODEL", "deepseek-chat")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://deepseekchat060621.vercel.app",
+        "https://meshbagseller.com",
+        "https://www.meshbagseller.com"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

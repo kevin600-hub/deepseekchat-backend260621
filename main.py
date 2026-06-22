@@ -6,7 +6,7 @@ from slowapi.util import get_remote_address
 from slowapi.middleware import SlowAPIMiddleware
 
 from core.config import ALLOWED_ORIGINS
-from routers import pump, mechanical
+from routers import pump, mechanical, chat
 
 limiter = Limiter(key_func=get_remote_address)
 

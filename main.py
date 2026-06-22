@@ -29,3 +29,4 @@ def health_check():
 
 app.include_router(pump.router, prefix="/assistant/pump", tags=["Pump Assistant"])
 app.include_router(mechanical.router, prefix="/assistant/mechanical", tags=["Mechanical Assistant"])
+app.include_router(chat.router, prefix="/assistant", tags=["General Assistant"])
